@@ -33,6 +33,16 @@ def test_health_endpoint_returns_ok():
     assert response.json() == {"status": "ok"}
 
 
+def test_health_ready_endpoint_is_deterministic():
+    response = client.get("/health/ready")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ready", "seed_used": 42}
+
+    repeated = client.get("/health/ready")
+    assert repeated.json() == response.json()
+
+
 def test_metrics_endpoint_respects_date_filters():
     base_response = client.get("/api/metrics")
     assert base_response.status_code == 200
@@ -67,6 +77,41 @@ def test_b2c_endpoint_only_returns_b2c_records():
     assert payload
     assert all(item["business_type"] == "B2C" for item in payload)
     assert payload == sorted(payload, key=lambda item: item["create_date"])
+
+
+def test_export_csv_endpoint_returns_valid_csv_format():
+    response = client.get("/api/metrics/export/csv")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/csv")
+
+    lines = response.text.strip().split("\n")
+    assert lines[0] == "period,income,outcome,net"
+    # One row per month of data (same 12-month span as the summary endpoint)
+    summary = client.get("/api/metrics/summary").json()
+    assert len(lines) - 1 == len(summary)
+
+
+def test_export_csv_rows_match_summary_values():
+    csv_response = client.get("/api/metrics/export/csv")
+    summary = client.get("/api/metrics/summary").json()
+
+    lines = csv_response.text.strip().split("\n")[1:]
+    rows = [line.split(",") for line in lines]
+
+    assert len(rows) == len(summary)
+    for row, item in zip(rows, summary):
+        assert row[0] == item["period"]
+        assert float(row[1]) == item["income"]
+        assert float(row[2]) == item["outcome"]
+        assert float(row[3]) == item["net"]
+
+
+def test_export_csv_endpoint_is_deterministic():
+    first = client.get("/api/metrics/export/csv")
+    second = client.get("/api/metrics/export/csv")
+
+    assert first.text == second.text
 
 
 def test_metrics_endpoint_filters_by_category():

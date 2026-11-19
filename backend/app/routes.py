@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import csv
+import io
 import random
 from collections import defaultdict
 from datetime import date, timedelta
 from typing import Literal
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Response
 from pydantic import BaseModel
 
 OperationType = Literal["income", "outcome"]
@@ -240,9 +242,19 @@ def detect_outcome_alerts(
     return alerts
 
 
+class HealthReady(BaseModel):
+    status: str
+    seed_used: int
+
+
 @router.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@router.get("/health/ready", response_model=HealthReady)
+def health_ready() -> HealthReady:
+    return HealthReady(status="ready", seed_used=42)
 
 
 @router.get("/api/metrics", response_model=list[FinancialMovement])
@@ -282,6 +294,23 @@ def get_metrics_summary(
         movements, start_date, end_date, category, operation_type
     )
     return summarize_movements(filtered, group_by)
+
+
+@router.get("/api/metrics/export/csv")
+def export_metrics_summary_csv() -> Response:
+    """Monthly summary (period,income,outcome,net) as a downloadable CSV."""
+    movements = generate_mock_movements(seed=42)
+    summary = summarize_movements(movements, "month")
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer, lineterminator="\n")
+    writer.writerow(["period", "income", "outcome", "net"])
+    for item in summary:
+        writer.writerow(
+            [item.period, item.income, item.outcome, item.net]
+        )
+
+    return Response(content=buffer.getvalue(), media_type="text/csv")
 
 
 @router.get("/api/metrics/categories/top", response_model=list[TopCategoryItem])
