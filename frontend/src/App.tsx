@@ -20,9 +20,19 @@ async function fetchFinancialData(): Promise<FinancialMovement[]> {
   return response.json();
 }
 
+function derivePeriod(movements: FinancialMovement[]): string {
+  const years = [
+    ...new Set(movements.map((m) => m.create_date.slice(0, 4))),
+  ].sort();
+  if (years.length === 0) return "";
+  if (years.length === 1) return `${years[0]} - Full Year`;
+  return `${years[0]}-${years[years.length - 1]}`;
+}
+
 function App() {
   const [metrics, setMetrics] = useState<KPIMetrics | null>(null);
   const [monthlyData, setMonthlyData] = useState<MonthlyDataPoint[]>([]);
+  const [period, setPeriod] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,6 +41,7 @@ function App() {
       .then((movements) => {
         setMetrics(computeKPIs(movements));
         setMonthlyData(computeMonthlyData(movements));
+        setPeriod(derivePeriod(movements));
       })
       .catch(() => {
         setError(
@@ -46,7 +57,7 @@ function App() {
     <main className="dark min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8">
-          <DashboardHeader period="2024 - Full Year" />
+          <DashboardHeader period={period || "—"} />
 
           {error ? (
             <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground">
