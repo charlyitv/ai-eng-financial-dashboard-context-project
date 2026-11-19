@@ -8,34 +8,32 @@
 `git log --oneline -5`:
 
 ```
-63979a9 (HEAD -> main) docs: add agent rules in .agents/rules
+a148485 (HEAD -> main) docs: add memory-bank (product, tech-stack, current-state)
+63979a9 docs: add agent rules in .agents/rules
 b519273 feat: add health/ready and CSV export endpoints
 4b19413 fix: derive dashboard period from fetched data instead of hardcoding 2024
 954f812 (origin/main, origin/HEAD) Merge pull request #1 from deimianvasquez/main
-eeece05 feat: use Vite API proxy and document frontend env setup
 ```
 
-HEAD está en `63979a9` (rama `main`), 3 commits por delante de `origin/main`
-(`954f812`). `git status --short` al final de la sesión: solo los 3 ficheros
-nuevos de `memory-bank/` sin trackear (sin cambios en código fuente, sin
-commit).
+HEAD está en `a148485` (rama `main`), 4 commits por delante de `origin/main`
+(`954f812`). `git status --short` limpio: los 3 ficheros de `memory-bank/`
+fueron commiteados en `a148485`; este mismo documento se actualizó después
+para reflejar el reinicio del backend (commit `docs:` posterior).
 
 ## Servicios en ejecución (verificados con `ps` + `curl`)
 
 | Servicio | Detalle | Verificación |
 |---|---|---|
-| Backend | `python3 -m uvicorn app.main:app --app-dir .../backend --host 0.0.0.0 --port 8000` (PID 17315) | `curl http://localhost:8000/health` → `{"status":"ok"}`; `/api/metrics` → 200 |
-| Frontend | `vite` (node, PID 17874) | `curl http://localhost:5173` → 200 |
+| Backend | `python3 -m uvicorn app.main:app --app-dir .../backend --host 0.0.0.0 --port 8000 --reload` (reloader PID 26314, server PID 26316) | `curl /health/ready` → **200** `{"status":"ok"}`/`{"status":"ready","seed_used":42}`; `/api/metrics` → 200; `/api/metrics/export/csv` → 200 (cabecera `period,income,outcome,net`); OpenAPI lista **11 rutas** |
+| Frontend | `vite` (node, terminal `npm`) | `curl http://localhost:5173` → 200 |
 | Docker Compose | **NO en uso**: `docker compose up --build -d` falló con exit code 127 (comando no disponible) | registro de terminal de la sesión |
 
-**Aviso verificado**: el proceso uvicorn en marcha **sirvió 404 en
-`/health/ready`** pese a que el código actual sí lo define y los tests pasan.
-El código en disco sí tiene las 11 rutas (grep de `@router.get` → 11); el
-OpenAPI servido por el proceso en marcha solo listaba 9 rutas (sin
-`/health/ready` ni `/api/metrics/export/csv`). Causa verificada: uvicorn
-arrancó a las 19:41 y `backend/app/routes.py` tiene mtime 20:19, y el proceso
-se lanzó **sin `--reload`** → no recargó. **Reiniciar uvicorn para que el
-proceso refleje HEAD.**
+**Resuelto**: el aviso previo (uvicorn sin `--reload` sirviendo 404 en
+`/health/ready` y solo 9 rutas en OpenAPI) se **verificó y corrigió**:
+el proceso se reinició con `--reload` (misma flag que usa el `Dockerfile`) y
+la verificación posterior dio `/health/ready` → 200, 11 rutas en OpenAPI y
+CSV export → 200. Nota: el reloader vigila la raíz del proyecto (como en
+Docker), así que cambios en frontend también recargan el backend.
 
 ## Estado de tests (ejecutados el 2026-11-18)
 
@@ -96,9 +94,9 @@ Now using node v24.22.1 (npm v11.19.1)
   con `derivePeriod()` desde los años presentes en la respuesta de
   `/api/metrics` (código actual verificado en `App.tsx`).
 - **`b519273`** — *feat: add health/ready and CSV export endpoints*: añade las
-  rutas 2 y 6 de la tabla de `product.md`. (Nota: los tests del backend pasan
-  con estas rutas, pero el proceso uvicorn en ejecución aún no las sirve — ver
-  «Servicios en ejecución».)
+  rutas 2 y 6 de la tabla de `product.md`. (Los tests pasan y, tras el
+  reinicio con `--reload`, el proceso vivo ya las sirve — ver «Servicios en
+  ejecución».)
 - **`63979a9`** — *docs: add agent rules in `.agents/rules`*: crea las 6
   reglas que AGENTS.md exige leer (`api-config-no-hardcoded-origins`,
   `dependencies-and-tooling`, `deterministic-mock-data`, `frontend-data-flow`,
