@@ -11,6 +11,22 @@
 
 ## Convenciones globales (aplican a todas las specs)
 
+### Fases del trabajo de spec (glosario)
+
+> Los encabezados "alineadas con los tipos de la fase 2" se refieren a esta
+> secuencia de artefactos (no a sprints ni a código):
+>
+> | Fase | Artefacto | Qué contiene |
+> |---|---|---|
+> | Fase 1 | `data-contract.md` | Contrato de datos: endpoints, params, respuestas verificados |
+> | Fase 2 | `api-types.ts` + `param-types.ts` | Tipos TS compilables (interfaces/JSDoc, no implementación) |
+> | Fase 3 | `components.md` (este fichero) | Componentes, props y casos límite — los usa sobre los tipos de fase 2 |
+>
+> También "las tres funcionalidades" significa aquí **filtros globales,
+> resumen agrupado y exportación CSV** (specs 1–3 de este fichero). Ojo con
+> `api-types.ts`, que por encargo del PM cubre otras tres: facets (spec 1),
+> alertas (spec 6) y top categorías (specs 4/7).
+
 ### Contraste con los patrones de fetch existentes (verificado 2026-11-22)
 
 El repo tiene **un único punto de fetch**: `fetchFinancialData()` en

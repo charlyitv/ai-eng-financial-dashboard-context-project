@@ -1,5 +1,8 @@
 /**
- * api-types.ts — interfaces de respuesta para las tres funcionalidades.
+ * api-types.ts — interfaces de respuesta para las tres funcionalidades con
+ * tipo propio (encargo del PM): facets (spec 1 de components.md), alertas
+ * (spec 6) y top categorías (specs 4/7). ⚠️ No confundir con "las tres
+ * funcionalidades" de README.md, que son filtros/resumen/CSV (specs 1–3).
  *
  * ESPEC (artefacto de spec, no implementación). Ubicación propuesta al
  * implementar: `frontend/src/lib/api-types.ts` (ver `types.md`).

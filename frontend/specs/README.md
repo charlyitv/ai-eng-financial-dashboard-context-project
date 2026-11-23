@@ -19,11 +19,31 @@
 | [`verificacion.md`](./verificacion.md) | Rastro corto de verificación: herramientas, commits por artefacto y una línea de evidencia por hallazgo. |
 | [`frontend-specs.md`](./frontend-specs.md) | Índice general con la tabla de artefactos y orden de implementación. |
 
+## Glosario de la ronda de specs
+
+> Términos que aparecen en los artefactos y su significado exacto (para no
+> depender del contexto de la sesión que los creó):
+>
+> - **Fases del trabajo de spec**: fase 1 = contrato (`data-contract.md`),
+>   fase 2 = tipos TS (`api-types.ts` + `param-types.ts`), fase 3 =
+>   componentes (`components.md`). "Props alineadas con la fase 2" = props
+>   tipadas con esos tipos.
+> - **"Las tres funcionalidades"** puede significar dos cosas según el
+>   fichero — siempre está indicado cuál:
+>   - en este README y en `components.md` (specs 1–3): **filtros globales,
+>     resumen agrupado, exportación CSV**;
+>   - en `api-types.ts` (encargo del PM): las tres con tipo de respuesta
+>     propio — **facets** (spec 1), **alertas** (spec 6) y **top categorías**
+>     (specs 4/7).
+> - **"spec N"** sin más = sección numerada de `components.md` (1–7).
+
 ## Las tres funcionalidades (rutas verificadas en `/docs`)
 
-> Las tres primeras funcionalidades del índice de implementación: filtros
-> globales, resumen agrupado y exportación CSV. Rutas, parámetros y enums
-> contrastados con `/docs` (OpenAPI 3.1 en vivo) y `curl` el 2026-11-22.
+> **Filtros globales, resumen agrupado y exportación CSV** = specs 1–3 de
+> `components.md` = items 1 y 2 del orden de implementación de
+> [`frontend-specs.md`](./frontend-specs.md) (que numera 7 funcionalidades en
+> 4 items). Rutas, parámetros y enums contrastados con `/docs` (OpenAPI 3.1 en
+> vivo) y `curl` el 2026-11-22.
 
 ### 1. Filtros globales de datos
 
@@ -38,7 +58,7 @@
 
 | Sentido | Tipo | Fichero |
 |---|---|---|
-| Petición | `MetricsFilters = DateRangeFilter & { operation_type?: OperationType; category?: Category }` ➕ (extensión de spec: fase 2 no cubre `category`) | `components.md` spec 1 |
+| Petición | `MetricsFilters = DateRangeFilter & { operation_type?: OperationType; category?: Category }` ➕ (extensión de spec: la fase 2 no tiene un tipo para `category` porque es param propio de `/api/metrics`) | `components.md`, spec 1 |
 | Respuesta (facets) | `FacetsResponse { operation_types, business_types, categories, min_date, max_date }` | `api-types.ts` |
 | Respuesta (movimientos) | `FinancialMovement[]` → derivados `KPIMetrics` | `financial-types.ts` / `types.md` |
 
@@ -49,7 +69,7 @@
 | `start_date` / `end_date` | ambos | ISO `YYYY-MM-DD` (p. ej. `2025-11-01`) | Opcionales; inválido → **422**; inclusive; `start > end` → **200 con `[]`** (validar en cliente); `undefined` = sin límite; clamp a `[min_date, max_date]` de facets |
 | `category` | `/api/metrics` | `'suppliers' \| 'sales' \| 'operational' \| 'administrative' \| 'others'` (5) | Enum → 422 si inválido; en facets llegan **ordenadas alfabéticamente** |
 | `operation_type` | `/api/metrics` | `'income' \| 'outcome'` | Enum → 422 si inválido |
-| `business_type` | — | ❌ **no aceptado** por `/api/metrics` | Filtro por canal fuera de esta barra global (spec 4/7) |
+| `business_type` | — | ❌ **no aceptado** por `/api/metrics` | Filtro por canal fuera de esta barra global (va en `components.md` specs 4 y 7) |
 
 **Casos límite**
 
@@ -93,7 +113,7 @@ Formato de `period` en la respuesta (según `group_by`, verificado con curl):
 **Casos límite**
 
 1. ✅ El formato de `period` **cambia con `group_by`** → parser/formatter por modo; las semanas ISO cruzan años y no son `YYYY-MM`.
-2. ✅ Los periodos sin movimientos **no aparecen** → la tabla muestra solo periodos con datos (decisión cerrada en spec 2: sin relleno de huecos).
+2. ✅ Los periodos sin movimientos **no aparecen** → la tabla muestra solo periodos con datos (decisión cerrada en la spec 2 de `components.md`: sin relleno de huecos).
 3. ✅ `group_by=day` con 360 movimientos → hasta ~360 filas; scroll o límite visual.
 4. ✅ `net` negativo → resaltar en rojo; `group_by` fuera del enum → 422 (validar en cliente antes de enviar).
 
@@ -121,7 +141,7 @@ Formato de `period` en la respuesta (según `group_by`, verificado con curl):
 
 **Casos límite**
 
-1. ✅ Los filtros activos **no** se reflejan en el CSV → copy honesto: "Exportar resumen mensual completo: no aplica los filtros" (opción (a), decisión cerrada en spec 3).
+1. ✅ Los filtros activos **no** se reflejan en el CSV → copy honesto: "Exportar resumen mensual completo: no aplica los filtros" (opción (a), decisión cerrada en la spec 3 de `components.md`).
 2. ✅ **Sin estado vacío** en la variante API: siempre 12 filas mensuales + cabecera.
 3. ✅ Descarga fallida → bloque de error global (política de fallo del repo); botón `disabled` mientras genera.
 4. ✅ Sin `Content-Disposition` → nombre sugerido `metrics_<hoy>.csv` en cliente.

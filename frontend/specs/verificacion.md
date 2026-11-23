@@ -3,7 +3,13 @@
 > Qué se verificó, con qué y en qué commit. Todo con fecha **2026-11-22**.
 > Artefactos: [`data-contract.md`](./data-contract.md) ·
 > [`types.md`](./types.md) · [`components.md`](./components.md) ·
-> [`frontend-specs.md`](./frontend-specs.md) (índice).
+> [`api-types.ts`](./api-types.ts) · [`param-types.ts`](./param-types.ts) ·
+> [`README.md`](./README.md) · [`frontend-specs.md`](./frontend-specs.md) (índice).
+>
+> Glosario: "fase 2" = tipos TS (`api-types.ts` + `param-types.ts`);
+> "las tres funcionalidades" = filtros/resumen/CSV (specs 1–3), salvo en
+> `api-types.ts` donde = facets/alertas/top (encargo del PM).
+> Ver detalle en el glosario de `README.md`.
 
 ## Herramientas usadas
 
@@ -39,6 +45,14 @@
 | `8506987` | `current-state.md`: branch + ronda de verificación |
 | `8cbf850` | contraste con el patrón de fetch de `App.tsx` |
 | `cb45a33` | desajustes wording PM ↔ campos API (resueltos en spec) |
+| `d8db355` | `verificacion.md` — rastro corto de verificación |
+| `62dd28d` | `api-types.ts` — interfaces de respuesta (facets/alertas/top) |
+| `2023da4` | `param-types.ts` — tipos de query params |
+| `3495f69` | cada nombre/tipo de propiedad verificado 1:1 contra OpenAPI de `/docs` |
+| `a2c40ec` | JSDoc completo por propiedad (significado, valores, formato) en ambos `.ts` |
+| `4f400cc` | `components.md`: tipos asociados + props por funcionalidad + ambigüedades PM cerradas |
+| `4dc8a4f` | `README.md` — índice y reglas fijas |
+| `68b626d` | `README.md`: las 3 funcionalidades (endpoints, tipos, params, casos límite) |
 
 ## Evidencia clave (una línea por hallazgo)
 
