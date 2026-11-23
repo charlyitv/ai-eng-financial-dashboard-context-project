@@ -5,6 +5,9 @@
  * implementar: `frontend/src/lib/param-types.ts` (junto a `api-types.ts`).
  *
  * Verificación (2026-11-22):
+ *  - ✅ nombre y tipo de **cada parámetro** 1:1 contra los `parameters` de
+ *    `/docs` (OpenAPI: `threshold` number min 0 default 0.3; `limit` integer
+ *    1–20 default 5; `group_by` enum; fechas `string $date | null`)
  *  - ✅ firmas con `Query(...)` de `backend/app/routes.py` (defaults, `ge`,
  *    `le`, nullables)
  *  - ✅ `curl` en el backend vivo: 422 con enum/fecha/limit inválidos;

@@ -43,8 +43,15 @@
 ## Evidencia clave (una línea por hallazgo)
 
 - ✅ `api-types.ts`: `FacetsResponse` / `AlertEntry`+`AlertResponse` /
-  `CategoryEntry`+`TopCategoriesResponse` verificadas contra Pydantic +
-  `curl` (2026-11-22); `npx tsc --strict --noEmit` → sin errores.
+  `CategoryEntry`+`TopCategoriesResponse` — **nombre y tipo de cada
+  propiedad** verificados 1:1 contra los schemas OpenAPI de `/docs`
+  (`MetricsFacets`, `MetricsAlert`, `TopCategoryItem`, todos `required`),
+  + Pydantic + `curl`; `npx tsc --strict --noEmit` → sin errores.
+- ✅ `param-types.ts`: nombre/tipo de cada query param verificado 1:1 contra
+  los `parameters` de `/docs` (`threshold` number ≥0 default 0.3;
+  `limit` integer 1–20 default 5; `group_by` enum; fechas `string $date
+  | null` opcionales); **sin `any`, sin `object`** (grep 0 coincidencias);
+  `npx tsc --strict --noEmit` → sin errores.
 - ✅ `param-types.ts`: `DateRangeFilter` / `AlertsParam` /
   `TopCategoriesParams` verificados contra firmas `Query(...)` (defaults,
   `ge`/`le`) + `curl`; `npx tsc --strict --noEmit` → sin errores.

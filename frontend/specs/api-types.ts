@@ -5,6 +5,8 @@
  * implementar: `frontend/src/lib/api-types.ts` (ver `types.md`).
  *
  * Verificación (2026-11-22):
+ *  - ✅ nombre y tipo de **cada propiedad** 1:1 contra los schemas OpenAPI
+ *    de `/docs` (`MetricsFacets`, `MetricsAlert`, `TopCategoryItem`)
  *  - ✅ campo a campo contra los modelos Pydantic de `backend/app/routes.py`
  *  - ✅ formas reales con `curl` en el backend vivo:
  *      GET /api/metrics/facets
