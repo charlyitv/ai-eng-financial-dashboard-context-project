@@ -24,13 +24,15 @@ HEAD está en `49f7c3a` (rama `main`), **4 commits por delante de
 - ✅ `memory-bank/` (3 ficheros) y `.agents/rules/` (6 ficheros) están
   trackeados y commiteados (`a148485` y `63979a9`; `current-state.md`
   actualizado en `c1faf58`).
-- ✅ Nuevos artefactos de spec en `docs/specs/` (4 commits separados:
-  contrato de datos, tipos, componentes, índice); todas las afirmaciones de
-  API verificadas contra `backend/app/routes.py` + `curl` en vivo; **0 ❓
-  pendientes**; 1 decisión ⚠️ de UI abierta con el PM (`|delta_pct| > 100%`).
+- ✅ Artefactos de spec en `frontend/specs/` (movidos desde `docs/specs/`
+  en `4bf8bc2` — esa carpeta ya no existe; 4 ficheros: `frontend-specs.md`
+  índice, `data-contract.md`, `types.md`, `components.md`); todas las
+  afirmaciones de API verificadas contra `backend/app/routes.py` + `curl` en
+  vivo; **0 ❓ pendientes**; 1 decisión ⚠️ de UI abierta con el PM
+  (`|delta_pct| > 100%`).
 - ⚠️ Restricción activa (fichero de memoria del repo): **no implementar
   componentes React ni llamadas a la API** en este proyecto; el alcance es
-  docs/specs y verificación.
+  specs (`frontend/specs/`) y verificación.
 
 ## Servicios en ejecución (verificados con `ps` + `curl`)
 
