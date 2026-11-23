@@ -1,8 +1,10 @@
 # Componentes propuestos por funcionalidad (verificado)
 
-> Cada sección: **Prompt del PM (outcome)** → **Componentes propuestos** →
-> **Casos límite**. Verificación: ✅ contrastado con código del backend o con
-> respuestas `curl` (2026-11-22) · ❌ afirmación incorrecta corregida · ➕
+> Cada sección: **Prompt del PM (outcome)** → **Desajustes wording PM ↔ API**
+> (si los hay) → **Componentes propuestos** → **Casos límite**. Los desajustes
+> se resuelven **aquí, en la spec** (copy, alcance o defaults), nunca en la
+> implementación. Verificación: ✅ contrastado con código del backend, `/docs`
+> o respuestas `curl` (2026-11-22) · ❌ afirmación incorrecta corregida · ➕
 > propuesta de diseño (decisión de implementación, no hecho de API).
 > El contrato de datos de cada spec está en `data-contract.md`; los tipos, en
 > `types.md`.
@@ -51,6 +53,13 @@ incluye). Patrón observado ✅:
 > de operación para centrarme en el segmento que me interesa; los KPIs y los
 > dos gráficos deben recalcularse con el subconjunto filtrado.
 
+### Desajustes de wording PM ↔ campos reales (resueltos en spec)
+
+| Wording del PM | Campo real en la API | Resolución en spec |
+|---|---|---|
+| "**segmento** que me interesa" (implícito: ¿canal B2B/B2C?) | ❌ `GET /api/metrics` **no acepta** `business_type` (verificado en `/docs` + `data-contract.md`); solo `start_date`, `end_date`, `category`, `operation_type` | Se define: en esta funcionalidad "segmento" = **rango de fechas + categoría + tipo de operación**. El filtro por canal queda fuera del `filter-bar` global → pertenece a la spec 4 (`b2b`/`b2c`) o a los filtros de `summary` (que sí acepta `business_type`). No se propone selector B2B/B2C en la barra global. |
+| "KPIs y los **dos gráficos**" | ✅ coincide: hay exactamente 2 gráficos (`IncomeOutcomeChart`, `ProfitPercentChart`) | Sin desajuste; se reutilizan sin cambios. |
+
 ### Componentes propuestos
 
 - `components/filters/filter-bar.tsx` — contenedor: lee facets, renderiza los
@@ -85,6 +94,14 @@ incluye). Patrón observado ✅:
 > Como usuario quiero ver ingresos, gastos y neto agrupados por día, semana o
 > mes para detectar en qué periodos se concentra el resultado.
 
+### Desajustes de wording PM ↔ campos reales (resueltos en spec)
+
+| Wording del PM | Campo real en la API | Resolución en spec |
+|---|---|---|
+| "ingresos, **gastos** y **neto**" | ✅ `income`, `outcome`, `net` (nombres técnicos ≠ wording, pero 1:1) | Mapeo explícito en la spec: gastos → `outcome`, neto → `net`. El PM dice "gasto", la API dice `outcome`; el subtítulo de la tabla usará el lenguaje del PM y el contrato mantiene `outcome`. |
+| "en qué **periodos** se concentra" (asume serie continua) | ⚠️ la respuesta **no trae periodos vacíos** y `period` cambia de formato según `group_by` (`YYYY-MM-DD` / `YYYY-Www` / `YYYY-MM`, verificado con curl) | Etiquetas formateadas **en cliente** por modo; los huecos se rellenan client-side si el PM quiere serie continua (decisión ya registrada como caso límite 2). |
+| "agrupados por día, semana o mes" | ✅ `group_by: day \| week \| month`, default `month` | Sin desajuste; el toggle envía siempre `group_by` explícito. |
+
 ### Componentes propuestos
 
 - `components/summary/summary-table.tsx` — tabla con periodo, ingresos,
@@ -114,6 +131,13 @@ incluye). Patrón observado ✅:
 
 > Como usuario quiero descargar en CSV los datos que estoy viendo para
 > analizarlos fuera del dashboard.
+
+### Desajustes de wording PM ↔ campos reales (resueltos en spec)
+
+| Wording del PM | Campo real en la API | Resolución en spec |
+|---|---|---|
+| "los **datos que estoy viendo**" (implícito: con los filtros activos) | ❌ `GET /api/metrics/export/csv` **no acepta ningún parámetro** (verificado en `/docs` + curl): siempre devuelve el resumen mensual completo (cabecera + 12 filas) | Desajuste resuelto en spec, con 2 opciones para el PM: **(a)** el botón exporta el dataset completo y el copy de la UI lo dice ("Exportar resumen mensual completo"); **(b)** exportación client-side serializando `/summary` + filtros con la misma cabecera. **No** se promete en la spec que los filtros afecten al CSV vía API. |
+| "los datos" (¿fila a fila o agregado?) | ⚠️ el CSV es **agregado** (`period,income,outcome,net`), no los 360 movimientos crudos | Se especifica en la spec: la exportación es del **resumen agrupado**, no del detalle; si el PM esperaba detalle (`/api/metrics`), la opción (b) cliente tendría que serializar ese endpoint — decisión pendiente de PM. |
 
 ### Componentes propuestos
 
@@ -145,6 +169,13 @@ incluye). Patrón observado ✅:
 > Como usuario quiero ver qué categorías concentran más gasto (o ingreso) para
 > priorizar dónde actuar.
 
+### Desajustes de wording PM ↔ campos reales (resueltos en spec)
+
+| Wording del PM | Campo real en la API | Resolución en spec |
+|---|---|---|
+| "**qué categorías** concentran" (implícito: el listado completo) | ⚠️ `/categories/top` devuelve solo **top N** (`limit` default **5**, `ge=1 le=20`) y **no acepta filtro `category`** | La spec define el título/labels como "Top 5 categorías" (o Top N según `limit`), nunca "todas las categorías". Drill-down por categoría no existe vía API. |
+| "gasto (o ingreso)" | ✅ `operation_type` (default **`outcome`** = gasto) | El toggle es la traducción exacta; default coincide con el wording principal ("gasto"). |
+
 ### Componentes propuestos
 
 - `components/categories/top-categories-card.tsx` — Card con lista o barras
@@ -171,6 +202,13 @@ incluye). Patrón observado ✅:
 
 > Como usuario quiero comparar el periodo actual con el anterior para saber si
 > mejoro o empeoro.
+
+### Desajustes de wording PM ↔ campos reales (resueltos en spec)
+
+| Wording del PM | Campo real en la API | Resolución en spec |
+|---|---|---|
+| "el **periodo actual** con el anterior" (asume que la API los elige) | ❌ `/comparison` **no define periodos por sí mismo**: `start_date`/`end_date` son **obligatorios** (422 sin ellos); el "anterior" lo calcula el servidor desplazando la misma duración | La spec define en cliente qué es "el periodo actual" (p. ej. último mes completo en `[min_date, max_date]` de facets) y envía ese rango; `previous_period` se delega al backend. |
+| "si **mejoro o empeoro**" (implícito: ingresos) | ✅ la métrica comparada es el **neto** (`calculate_net_value`), no `income` | Copy de la card dice "neto" explícitamente; la flecha color por signo ya es coherente (`delta_pct`/`delta_abs` mismo signo, verificado). |
 
 ### Componentes propuestos
 
@@ -205,6 +243,14 @@ incluye). Patrón observado ✅:
 > Como usuario quiero ser avisado cuando un periodo tiene un gasto
 > significativamente por encima de mi media para corregir a tiempo.
 
+### Desajustes de wording PM ↔ campos reales (resueltos en spec)
+
+| Wording del PM | Campo real en la API | Resolución en spec |
+|---|---|---|
+| "un **gasto** significativamente por encima de **mi media**" | ✅ `outcome_total` vs `baseline_average` = media de `outcome` de los **periodos anteriores ya procesados** (no una media global ni configurable) | La spec describe el baseline como "media de los periodos anteriores del propio rango"; el primer periodo no tiene baseline → 0 alertas (ya como caso límite 6). |
+| "**significativamente**" (el PM no da cifra) | ✅ `threshold` (default **0.3**, `ge=0`; sin límite superior) | Se especifica en spec: el slider traduce "significativamente" a `threshold` por defecto 0.3 (30 % sobre la media); el PM puede redefinir el default sin cambiar la spec de componentes. |
+| "ser avisado" (¿push/email?) | ⚠️ la API solo **lista** alertas (`GET /alerts → MetricsAlert[]`); no hay notificaciones push/email | Se resuelve en spec: "avisado" = **visualización en dashboard** (lista de alertas); cualquier notificación externa queda fuera de alcance. |
+
 ### Componentes propuestos
 
 - `components/alerts/alert-list.tsx` — lista de periodos en alerta ordenada
@@ -236,6 +282,13 @@ incluye). Patrón observado ✅:
 
 > Como usuario quiero separar el rendimiento entre clientes B2B y B2C para
 > entender qué canal aporta más.
+
+### Desajustes de wording PM ↔ campos reales (resueltos en spec)
+
+| Wording del PM | Campo real en la API | Resolución en spec |
+|---|---|---|
+| "**clientes** B2B y B2C" | ⚠️ el campo se llama `business_type` y los valores son `B2B`/`B2C` — es un **canal/segmento de negocio**, no una lista de clientes (no hay entidades de cliente en la API) | Copy de la spec usa "canal" (B2B/B2C) en lugar de "clientes"; los endpoints `/b2b` y `/b2c` filtran `business_type`. |
+| "**qué canal aporta más**" (comparación simultánea) | ⚠️ no hay endpoint que devuelva ambos canales a la vez; solo `/b2b` y `/b2c` por separado (o `summary?business_type=`) | La spec resuelve la comparación con **dos fetches** (`Promise.all`, ya como caso límite 1) o alternando pestañas; si el PM quiere comparación lado a lado estable, usar `summary?business_type=B2B` + `summary?business_type=B2C` en vez de crudos. |
 
 ### Componentes propuestos
 
