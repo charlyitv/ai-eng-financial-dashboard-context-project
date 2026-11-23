@@ -6,7 +6,7 @@
 >
 > | Artefacto | Contenido | Verificación |
 > |---|---|---|
-> | [`data-contract.md`](./data-contract.md) | Contrato de endpoints (parámetros, respuestas) con leyenda ✅/❌/❓ y evidencia `curl` | ✅ código + `curl` en vivo (2026-11-22) |
+> | [`data-contract.md`](./data-contract.md) | Contrato de endpoints (parámetros, respuestas) con leyenda ✅/❌/❓ y evidencia `curl` | ✅ código + `/docs` (OpenAPI) + `curl` en vivo (2026-11-22) |
 > | [`types.md`](./types.md) | Interfaces TypeScript propuestas, campo a campo contra los modelos Pydantic | ✅ código de `backend/app/routes.py` |
 > | [`components.md`](./components.md) | Prompt del PM, componentes propuestos y casos límite por funcionalidad | ✅ código + estructura frontend |
 >
