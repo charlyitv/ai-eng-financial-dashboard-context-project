@@ -81,6 +81,11 @@
   validación cliente de rango invertido, sin implementación en rama, sin
   dependencias nuevas) — derivado 1:1 de artefactos ya verificados; enlazado
   desde la tabla de `frontend-specs.md` (7 filas).
+- ✅ `README.md` → tres funcionalidades (grep = 3 secciones "### "): 4 endpoints
+  rutas comprobadas contra `openapi.json` en vivo (facets/metrics sin params de
+  canal, summary con los 5 params, csv con **0 params**); tipos petición/respuesta
+  por funcionalidad; tablas de valores válidos y restricciones (enums, defaults,
+  422, 200 `[]`); 4 casos límite cada una (≥2 exigido).
 - ✅ CSV: `content-type: text/csv; charset=utf-8` (OpenAPI dice `application/json` — discrepancia documentada).
 - ✅ `period`: `YYYY-MM-DD` / `YYYY-Www` / `YYYY-MM` según `group_by` (curl).
 - ✅ Rango invertido `start > end` → `200 []` (validar orden solo en cliente).
