@@ -9,6 +9,7 @@
 > | [`data-contract.md`](./data-contract.md) | Contrato de endpoints (parámetros, respuestas) con leyenda ✅/❌/❓ y evidencia `curl` | ✅ código + `/docs` (OpenAPI) + `curl` en vivo (2026-11-22) |
 > | [`types.md`](./types.md) | Interfaces TypeScript propuestas, campo a campo contra los modelos Pydantic | ✅ código de `backend/app/routes.py` |
 > | [`components.md`](./components.md) | Prompt del PM, componentes propuestos y casos límite por funcionalidad | ✅ código + estructura frontend |
+> | [`verificacion.md`](./verificacion.md) | Rastro corto: qué se verificó, con qué herramienta y en qué commit | ✅ `git log` + registros de sesión |
 >
 > **Leyenda de verificación de afirmaciones de API**:
 >
