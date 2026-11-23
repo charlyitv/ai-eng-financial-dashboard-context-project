@@ -56,7 +56,7 @@ export interface MetricsFacets {                  // ✅ == MetricsFacets (Pydan
 export type GroupBy = 'day' | 'week' | 'month'     // ✅ == GroupBy (Literal)
 
 export interface MetricsSummaryItem {              // ✅ == MetricsSummaryItem
-  period: string   // 'YYYY-MM-DD' | 'YYYY-Www' | 'YYYY-MM'
+  period: string   // ✅ curl: 'YYYY-MM-DD' | 'YYYY-Www' | 'YYYY-MM'
   income: number
   outcome: number
   net: number
