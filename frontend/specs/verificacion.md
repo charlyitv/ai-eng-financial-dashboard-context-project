@@ -61,6 +61,21 @@
   grep `Significado|Valores|Formato` = 14+9 campos cubiertos; `tsc --strict`
   OK; `grep ': any\|: object'` → 0 en código.
 
+- ✅ `components.md` → tipos por funcionalidad: cada una de las 7 specs
+  tiene subsección "Tipos asociados" (grep = 7) enlazando con `api-types.ts`
+  / `param-types.ts`: 1 → `FacetsResponse`+`DateRangeFilter`+`QueryParams`;
+  2 → `DateRangeFilter`+`group_by`; 3 → ❌ sin params (CSV sin query);
+  4 → `TopCategoriesResponse`/`TopCategoriesParams`; 5 → `DateRangeFilter`
+  (obligatorio en `/comparison`); 6 → `AlertEntry`/`AlertResponse`+
+  `AlertsParam`; 7 → `business_types`/`QueryParams`/`DateRangeFilter`.
+- ✅ Props de componentes alineadas con fase 2: 7 specs con subsección
+  "Props (alineadas con los tipos de la fase 2)" (grep = 7) — props tipadas con
+  `FacetsResponse`, `DateRangeFilter`, `AlertResponse`, `TopCategoriesResponse`,
+  `AlertsParam`, `QueryParams` y `Required<DateRangeFilter>` en `/comparison`;
+  `MetricsFilters` marcado ➕ (fase 2 no cubre `category` de `/api/metrics`).
+- ✅ Ambigüedades del brief PM cerradas en spec: spec 3 → opción (a) CSV
+  completo con copy honesto (b descartada); spec 5 → `|delta_pct| > 100 %`
+  se muestra tal cual; spec 2 → sin relleno de huecos (solo periodos con datos).
 - ✅ CSV: `content-type: text/csv; charset=utf-8` (OpenAPI dice `application/json` — discrepancia documentada).
 - ✅ `period`: `YYYY-MM-DD` / `YYYY-Www` / `YYYY-MM` según `group_by` (curl).
 - ✅ Rango invertido `start > end` → `200 []` (validar orden solo en cliente).
@@ -70,6 +85,9 @@
 
 ## Pendiente
 
-- ⚠️ Decisión de UI con el PM: escala de `|delta_pct| > 100 %` (spec 5).
-- ⚠️ Decisión de PM en spec 3: copy "dataset completo" vs export client-side.
-- **0 afirmaciones ❓ sin verificar** en todos los artefactos.
+- ✅ Cerradas en esta ronda (antes ⚠️): spec 5 → `|delta_pct| > 100 %` se
+  muestra tal cual (card numérica, color por signo); spec 3 → opción (a):
+  CSV = resumen mensual completo con copy honesto (opción b descartada);
+  spec 2 → sin relleno de huecos.
+- **0 afirmaciones ❓ sin verificar** y **0 decisiones ⚠️ abiertas** en todos
+  los artefactos.

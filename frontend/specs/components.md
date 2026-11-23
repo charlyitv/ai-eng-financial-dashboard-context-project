@@ -71,6 +71,55 @@ incluye). Patrón observado ✅:
 - Reutilizar `KPIRow`, `IncomeOutcomeChart`, `ProfitPercentChart` sin cambios
   (ya consumen datos derivados).
 
+### Props (alineadas con los tipos de la fase 2)
+
+> Solo contrato de props (fase 2 = `api-types.ts` / `param-types.ts`); sin
+> implementación. ➕ `MetricsFilters` es tipo de spec: `param-types.ts` cubre
+> facets/alertas/top, no los params de `GET /api/metrics`.
+
+```ts
+// filter-bar.tsx
+interface FilterBarProps {
+  facets: FacetsResponse | null;    // api-types.ts — null mientras carga
+  value: MetricsFilters;
+  onChange(next: MetricsFilters): void;
+  loading?: boolean;                // deshabilita controles durante el fetch
+}
+type MetricsFilters = DateRangeFilter & {   // ➕ extensión de spec
+  operation_type?: OperationType;   // reutiliza TopCategoriesParams['operation_type']
+  category?: Category;              // ❌ ausente en fase 2 (param real de /api/metrics)
+};
+
+// date-range-field.tsx
+interface DateRangeFieldProps {
+  min: IsoDate;                     // FacetsResponse.min_date
+  max: IsoDate;                     // FacetsResponse.max_date
+  value: DateRangeFilter;
+  onChange(next: DateRangeFilter): void;
+  error?: string;                   // start > end → caso límite 1
+}
+
+// select-field.tsx
+interface SelectFieldProps<T extends string> {
+  options: readonly T[];            // FacetsResponse.categories | operation_types
+  value: T | undefined;             // undefined = "Todos" → param omitido
+  onChange(next: T | undefined): void;
+  disabled?: boolean;
+}
+```
+
+### Tipos asociados (✅ verificado en `api-types.ts` / `param-types.ts`)
+
+| Tipo | Fichero | Uso en esta spec |
+|---|---|---|
+| `FacetsResponse` | `specs/api-types.ts` | Poblar el date-picker (`min_date`/`max_date`) y los catálogos de `select-field` (orden alfabético de `categories`). |
+| `DateRangeFilter` | `specs/param-types.ts` | `start_date`/`end_date` que envía el fetch de `/api/metrics` (`YYYY-MM-DD`, inclusive). |
+| `QueryParams` | `specs/param-types.ts` | Serialización: omitir `undefined` para que apliquen los defaults del servidor. |
+
+- Respuesta de `/api/metrics` (`FinancialMovement[]` → `KPIMetrics`) → tipos en
+  `src/lib/financial-types.ts` y `types.md` (fuera del alcance de
+  `api-types.ts`, que cubre facets/alertas/top).
+
 ### Casos límite
 
 1. ✅ `start_date > end_date` → invalidar en cliente (no disparar fetch) y
@@ -109,13 +158,44 @@ incluye). Patrón observado ✅:
 - `components/summary/group-by-toggle.tsx` — control segmentado
   día/semana/mes ✅ (`GroupBy`).
 
+### Props (alineadas con los tipos de la fase 2)
+
+```ts
+// group-by-toggle.tsx — la unión literal viene de la fase 2
+type GroupByOption = NonNullable<AlertsParam['group_by']>; // 'day'|'week'|'month'
+
+interface GroupByToggleProps {
+  value: GroupByOption;             // el fetch envía siempre explícito
+  onChange(next: GroupByOption): void;
+}
+
+// summary-table.tsx
+interface SummaryTableProps {
+  rows: MetricsSummaryItem[];       // types.md (respuesta /summary)
+  loading: boolean;                 // → skeleton
+}
+```
+
+### Tipos asociados (✅ verificado en `api-types.ts` / `param-types.ts`)
+
+| Tipo | Fichero | Uso en esta spec |
+|---|---|---|
+| `DateRangeFilter` | `specs/param-types.ts` | Filtro de fechas del fetch de `/api/metrics/summary`. |
+| `QueryParams` (`group_by`) | `specs/param-types.ts` | El toggle envía `day`/`week`/`month` explícito; `undefined` omite y aplica default `month`. |
+
+- Respuesta (`MetricsSummaryItem[]`) → tipos en `types.md` (no cubierta por
+  `api-types.ts`, que agrupa las tres funcionalidades con tipo propio: facets,
+  alertas, top categorías).
+
 ### Casos límite
 
 1. ✅ **Formato de `period` varía con `group_by`** → un parser/formatter por
    modo; semanas ISO (`2025-W44`, verificado con curl) cruzan años y no son
    `YYYY-MM`.
-2. ✅ Los periodos sin movimientos **no aparecen** en la respuesta → decidir
-   si se muestran huecos (rellenar client-side) o solo periodos con datos.
+2. ✅ **Resuelto en spec**: la respuesta **no trae periodos vacíos** → la
+   tabla muestra **solo periodos con datos** (fuente de verdad del servidor);
+   no se rellenan huecos en cliente. El subtítulo advierte que puede haber
+   huecos en la serie.
 3. ✅ `group_by=day` con 360 movimientos → hasta ~360 filas; paginar o limitar
    la altura con scroll.
 4. ✅ `net` negativo → resaltar en rojo (`variant` de `KPICard` como
@@ -136,8 +216,8 @@ incluye). Patrón observado ✅:
 
 | Wording del PM | Campo real en la API | Resolución en spec |
 |---|---|---|
-| "los **datos que estoy viendo**" (implícito: con los filtros activos) | ❌ `GET /api/metrics/export/csv` **no acepta ningún parámetro** (verificado en `/docs` + curl): siempre devuelve el resumen mensual completo (cabecera + 12 filas) | Desajuste resuelto en spec, con 2 opciones para el PM: **(a)** el botón exporta el dataset completo y el copy de la UI lo dice ("Exportar resumen mensual completo"); **(b)** exportación client-side serializando `/summary` + filtros con la misma cabecera. **No** se promete en la spec que los filtros afecten al CSV vía API. |
-| "los datos" (¿fila a fila o agregado?) | ⚠️ el CSV es **agregado** (`period,income,outcome,net`), no los 360 movimientos crudos | Se especifica en la spec: la exportación es del **resumen agrupado**, no del detalle; si el PM esperaba detalle (`/api/metrics`), la opción (b) cliente tendría que serializar ese endpoint — decisión pendiente de PM. |
+| "los **datos que estoy viendo**" (implícito: con los filtros activos) | ❌ `GET /api/metrics/export/csv` **no acepta ningún parámetro** (verificado en `/docs` + curl): siempre devuelve el resumen mensual completo (cabecera + 12 filas) | ✅ **Resuelto en spec (opción a)**: el botón exporta el dataset completo vía API y el copy lo dice ("Exportar resumen mensual completo: no aplica los filtros activos"). Opción (b) client-side → **descartada** en esta ronda (fuera del alcance; sin tipo de fase 2 que la respalde). |
+| "los datos" (¿fila a fila o agregado?) | ⚠️ el CSV es **agregado** (`period,income,outcome,net`), no los 360 movimientos crudos | ✅ **Resuelto en spec**: la exportación es del **resumen agrupado**; el detalle crudo queda **fuera de alcance** (si el PM lo quiere, es petición nueva al backend, no un ajuste de UI). |
 
 ### Componentes propuestos
 
@@ -147,17 +227,35 @@ incluye). Patrón observado ✅:
   ✅ curl: `Content-Type: text/csv; charset=utf-8` real (el OpenAPI de `/docs`
   declara `application/json` — fiarse del header observado, no del schema).
 
+### Props (alineadas con los tipos de la fase 2)
+
+```ts
+// export-csv-button.tsx — ❌ sin props de filtros: el endpoint no acepta
+// query params y la opción (b) client-side está descartada en esta ronda.
+interface ExportCsvButtonProps {
+  fileName?: string;                // default metrics_<hoy>.csv (sin Content-Disposition)
+  loading?: boolean;                // disabled mientras genera
+}
+```
+
+### Tipos asociados (✅ verificado en `api-types.ts` / `param-types.ts`)
+
+| Tipo | Fichero | Uso en esta spec |
+|---|---|---|
+| — (ninguno) | — | ❌ `GET /api/metrics/export/csv` **no acepta query params** → no hay tipo de parámetros que aplicar; **opción (b) descartada** en esta ronda (no hay `QueryParams` aplicable al CSV). |
+| Cabecera CSV `period,income,outcome,net` | `specs/data-contract.md` | El contrato del fichero descargado vive en el data-contract, no en `api-types.ts`. |
+
 ### Casos límite
 
-1. ❌ **CORREGIDO**: los filtros activos **no** pueden reflejarse en el CSV vía
-   query params (el endpoint no los acepta, ✅ verificado). Opciones: a) avisar
-   al usuario de que la exportación es del dataset completo, o b) exportar en
-   cliente (serializar `summary` + filtros con la misma cabecera).
-2. ✅ El endpoint siempre devuelve 12 filas mensuales + cabecera → estado
-   vacío **no** es posible aquí; sí puede serlo la opción cliente (b).
+1. ✅ **Resuelto**: los filtros activos **no** se reflejan en el CSV (el
+   endpoint no acepta params, verificado). Adoptada la **opción (a)**: copy
+   honesto ("Exportar resumen mensual completo: no aplica los filtros"); no
+   se promete filtrado en la exportación.
+2. ✅ El endpoint siempre devuelve 12 filas mensuales + cabecera → **sin
+   estado vacío** en la variante API.
 3. ✅ Descarga fallida → usar el bloque de error/política de fallo global.
 4. ✅ Sin `Content-Disposition` → el nombre de fichero lo elige el cliente
-   (`metrics_<hoy>.csv`); el rango de fechas aplica solo a la variante (b).
+   (`metrics_<hoy>.csv`); el rango de fechas **no aplica** (opción a adoptada).
 5. ✅ No bloquear la UI: botón disabled mientras genera.
 
 ---
@@ -182,6 +280,34 @@ incluye). Patrón observado ✅:
   horizontales (porcentaje relativo al total del top) usando `formatCurrency`.
 - `components/categories/operation-type-toggle.tsx` — alternar
   `income` / `outcome` ✅ (`operation_type` default `outcome`).
+
+### Props (alineadas con los tipos de la fase 2)
+
+```ts
+type OperationTypeOption = NonNullable<TopCategoriesParams['operation_type']>;
+
+// operation-type-toggle.tsx
+interface OperationTypeToggleProps {
+  value: OperationTypeOption;       // default 'outcome'
+  onChange(next: OperationTypeOption): void;
+}
+
+// top-categories-card.tsx
+interface TopCategoriesCardProps {
+  entries: TopCategoriesResponse;   // fase 2 — array ordenado por total desc
+  operationType: OperationTypeOption;
+  loading: boolean;
+}
+// `limit` (TopCategoriesParams['limit']) vive en el contenedor que hace el
+// fetch, no en la card.
+```
+
+### Tipos asociados (✅ verificado en `api-types.ts` / `param-types.ts`)
+
+| Tipo | Fichero | Uso en esta spec |
+|---|---|---|
+| `TopCategoriesResponse` / `CategoryEntry` | `specs/api-types.ts` | Respuesta del ranking (array directo, ordenado por `total_amount` desc; 2 decimales). |
+| `TopCategoriesParams` | `specs/param-types.ts` | `operation_type` (default `outcome`), `limit` (1–20, default 5), fechas; ❌ sin `category`. |
 
 ### Casos límite
 
@@ -215,6 +341,28 @@ incluye). Patrón observado ✅:
 - `components/comparison/comparison-card.tsx` — valor actual, valor anterior,
   delta absoluto y % con flecha (iconos `lucide-react` como en `kpi-row`).
 
+### Props (alineadas con los tipos de la fase 2)
+
+```ts
+// comparison-card.tsx
+// ⚠️ Única excepción a la opcionalidad de fase 2: /comparison exige
+// start_date y end_date (422 si faltan) → rango tipado como Required.
+interface ComparisonCardProps {
+  data: MetricsComparison | null;   // types.md — null = loading
+  range: Required<DateRangeFilter>; // = { start_date: IsoDate; end_date: IsoDate }
+  loading?: boolean;
+}
+```
+
+### Tipos asociados (✅ verificado en `api-types.ts` / `param-types.ts`)
+
+| Tipo | Fichero | Uso en esta spec |
+|---|---|---|
+| `DateRangeFilter` | `specs/param-types.ts` | Campos `start_date`/`end_date` que **aquí son obligatorios** (422 sin ellos): la opción `?` aplica al resto de endpoints, en `/comparison` validar presencia y orden antes del fetch. |
+
+- Respuesta (`MetricsComparison`) → tipo en `types.md` (fuera de
+  `api-types.ts`); `delta_pct === null ⇔ previous_period === 0` ya documentado.
+
 ### Casos límite
 
 1. ✅ `delta_pct === null` ⇔ `previous_period === 0` (verificado con curl) →
@@ -224,15 +372,17 @@ incluye). Patrón observado ✅:
 3. ✅ `sign(delta_pct) === sign(delta_abs)` siempre (denominador
    `abs(previous_net)`; verificado con curl: +237.24 / −275.65 / −114.8) →
    pintar por signo es consistente, nunca contradictorio.
-4. ⚠️ (derivado, verificado) **`|delta_pct|` puede superar 100 %** cuando el
-   neto cruza el cero (hasta +590 % con datos reales). **Decisión de UI con
-   el PM**: mostrar tal cual o limitar la escala del indicador.
+4. ✅ **Resuelto en spec**: `|delta_pct|` puede superar 100 % (hasta +590 %
+   cuando el neto cruza el cero). La card es numérica, sin escala que
+   limitar → **mostrar el valor real** (`+590.0%`) con color por signo y copy
+   "vs periodo anterior"; cualquier tope sería cambio de copy, no de datos.
 5. ✅ Card de loading → skeleton igual que `KPICard`.
 6. ✅ La métrica comparada es el **neto** (`calculate_net_value`), no los
    ingresos; no duplicar el cálculo en cliente.
 
-**Resultado**: el ❓ original (signo con `previous_net` negativo) quedó
-**resuelto → ✅**; solo queda la decisión de UI del punto 4.
+**Resultado**: el ❓ original (signo con `previous_period` negativo) →
+**resuelto ✅**; la decisión de UI del punto 4 también quedó **cerrada en esta
+ronda** → ✅.
 
 ---
 
@@ -257,6 +407,30 @@ incluye). Patrón observado ✅:
   por `increase_ratio` descendente.
 - `components/alerts/threshold-slider.tsx` — control del `threshold`
   (default 0.3 ✅), con formato porcentaje (`formatPercent(threshold * 100)`).
+
+### Props (alineadas con los tipos de la fase 2)
+
+```ts
+// alert-list.tsx
+interface AlertListProps {
+  alerts: AlertResponse;            // fase 2 — array directo; [] = vacío legítimo
+  loading: boolean;
+}
+
+// threshold-slider.tsx
+interface ThresholdSliderProps {
+  value: NonNullable<AlertsParam['threshold']>;    // number ≥ 0 (default 0.3)
+  onChange(next: NonNullable<AlertsParam['threshold']>): void; // clamp UX 0–1
+  groupBy: NonNullable<AlertsParam['group_by']>;   // cambia el formato de period
+}
+```
+
+### Tipos asociados (✅ verificado en `api-types.ts` / `param-types.ts`)
+
+| Tipo | Fichero | Uso en esta spec |
+|---|---|---|
+| `AlertEntry` / `AlertResponse` | `specs/api-types.ts` | Fila de alerta: `period` (formato según `group_by`), `outcome_total`, `baseline_average` (>0), `increase_ratio` (≥ threshold); respuesta = array directo, `[]` = vacío legítimo. |
+| `AlertsParam` | `specs/param-types.ts` | `threshold` (`number` ≥0, default 0.3), `group_by`, `business_type`, fechas. |
 
 ### Casos límite
 
@@ -295,6 +469,32 @@ incluye). Patrón observado ✅:
 - `components/channels/channel-toggle.tsx` — pestañas B2B / B2C que alternan
   la fuente de datos de KPIs y gráficos.
 - Reutilizar `KPIRow`, `IncomeOutcomeChart`, `ProfitPercentChart` sin cambios.
+
+### Props (alineadas con los tipos de la fase 2)
+
+```ts
+type Channel = NonNullable<QueryParams['business_type']>; // 'B2B'|'B2C'
+
+// channel-toggle.tsx
+interface ChannelToggleProps {
+  options: FacetsResponse['business_types'];  // ['B2B','B2C'] desde facets
+  value: Channel;
+  onChange(next: Channel): void;
+}
+// Los dos fetches (Promise.all) comparten DateRangeFilter: misma query,
+// dos canales.
+```
+
+### Tipos asociados (✅ verificado en `api-types.ts` / `param-types.ts`)
+
+| Tipo | Fichero | Uso en esta spec |
+|---|---|---|
+| `FacetsResponse.business_types` | `specs/api-types.ts` | Poblar las pestañas del toggle (`['B2B','B2C']`). |
+| `QueryParams.business_type` | `specs/param-types.ts` | `'B2B' \| 'B2C'`; `undefined` = ambos canales mezclados (no usar para el toggle). |
+| `DateRangeFilter` | `specs/param-types.ts` | Fechas aplicadas por igual a los dos fetches (`Promise.all`). |
+
+- Respuesta de `/b2b` y `/b2c` (mismo shape que `/api/metrics`) → tipos en
+  `src/lib/financial-types.ts` y `types.md`.
 
 ### Casos límite
 
