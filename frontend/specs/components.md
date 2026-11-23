@@ -45,7 +45,8 @@
 ### Casos límite
 
 1. ✅ `start_date > end_date` → invalidar en cliente (no disparar fetch) y
-   mostrar aviso inline.
+   mostrar aviso inline. ✅ curl: el backend **no** valida el orden y responde
+   `200` con `[]`, así que la validación es 100 % responsabilidad del cliente.
 2. ✅ Respuesta vacía (`[]` tras filtrar) → KPIs en cero/"—", gráficos con
    estado vacío; no romper `derivePeriod()` (devuelve `""` → cabecera `—`).
 3. ✅ Cambios rápidos de filtro → cancelar la petición anterior con
@@ -74,7 +75,8 @@
 ### Casos límite
 
 1. ✅ **Formato de `period` varía con `group_by`** → un parser/formatter por
-   modo; semanas ISO (`2026-W01`) cruzan años y no son `YYYY-MM`.
+   modo; semanas ISO (`2025-W44`, verificado con curl) cruzan años y no son
+   `YYYY-MM`.
 2. ✅ Los periodos sin movimientos **no aparecen** en la respuesta → decidir
    si se muestran huecos (rellenar client-side) o solo periodos con datos.
 3. ✅ `group_by=day` con 360 movimientos → hasta ~360 filas; paginar o limitar
@@ -98,6 +100,8 @@
 - `components/export/export-csv-button.tsx` — botón con estado `loading`;
   descarga vía `fetch` → `Blob` → `URL.createObjectURL` (respeta
   `API_BASE_URL` y CORS). ✅ Sin parámetros: el endpoint no los acepta.
+  ✅ curl: `Content-Type: text/csv; charset=utf-8` real (el OpenAPI de `/docs`
+  declara `application/json` — fiarse del header observado, no del schema).
 
 ### Casos límite
 
