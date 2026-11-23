@@ -9,9 +9,29 @@
 
 ## Convenciones globales (aplican a todas las specs)
 
+### Contraste con los patrones de fetch existentes (verificado 2026-11-22)
+
+El repo tiene **un único punto de fetch**: `fetchFinancialData()` en
+`App.tsx` (vanilla `fetch`, sin axios ni react-query — `package.json` no los
+incluye). Patrón observado ✅:
+
+| Aspecto | Patrón existente (`App.tsx`) | Estado |
+|---|---|---|
+| Base URL | `const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ""` a nivel módulo; `.env` local = `http://localhost:8000` (el proxy de Vite apunta a `http://backend:8000`, hostname Docker que no resuelve fuera de compose) | ✅ reutilizar tal cual |
+| Error HTTP | `if (!response.ok) throw new Error(\`Failed to fetch financial data: ${status}\`)` | ✅ mismo estilo en `fetchJson<T>` |
+| Error UI | `.catch(() => setError("No se pudo cargar la informacion financiera..."))` → **un solo bloque de error** arriba; `.finally(() => setLoading(false))` | ✅ política ya codificada |
+| Loading | boolean `loading` prop → cada componente hace `if (loading) return <Skeleton/>` | ✅ mismos estados en las specs |
+| Cancelación | **no hay** `AbortController` ni limpieza en el `useEffect` | ❌ gap: necesario al filtrar (fetch por cambio de filtro) |
+| Re-fetch | `useEffect(..., [])` — solo una vez | ❌ gap: filtros/summary requieren re-fetch con resets de `loading` |
+| Response | `response.json()` sin tipar (`Promise<FinancialMovement[]>` anotado en la firma) | ✅ `fetchJson<T>` lo formaliza |
+
 - **Capa de API** (➕): crear `frontend/src/lib/api.ts` con un cliente tipado
   (`fetchJson<T>`), `AbortController` para cancelar peticiones superpuestas y
-  `API_BASE_URL` centralizado (hoy está inline en `App.tsx`).
+  `API_BASE_URL` centralizado (hoy está inline en `App.tsx`). ✅ coherente con
+  el patrón vanilla existente: **sin nuevas dependencias** (mismo `fetch`,
+  mismo manejo `!response.ok → throw`,
+  mismo bloque de error único) — solo añade tipado, reutilización y
+  cancelación que hoy no existen.
 - **Política de fallo** ✅ (regla del proyecto): si el fetch falla, se muestra
   **solo** el bloque de error de `App.tsx`; nunca datos alternativos ni
   `mock-data.ts` (huérfano, prohibido importarlo desde `App.tsx`).
