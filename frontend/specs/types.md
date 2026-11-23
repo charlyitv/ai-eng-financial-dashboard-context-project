@@ -14,6 +14,11 @@ uso).
 > (`FacetsResponse`, `AlertEntry`/`AlertResponse`, `CategoryEntry`/
 > `TopCategoriesResponse`), verificadas campo a campo contra Pydantic +
 > `curl` y con `tsc --strict` en verde (2026-11-22). No es implementación.
+>
+> ➕ [`param-types.ts`](./param-types.ts): tipos de query params
+> (`DateRangeFilter`, `AlertsParam`, `TopCategoriesParams`), verificados
+> contra las firmas `Query(...)` de `routes.py` + `curl` (defaults 0.3/month/5,
+> límites `ge`/`le`, 422) y con `tsc --strict` en verde. No es implementación.
 
 ## Tipos existentes (ya en el repo, ✅ sin cambios)
 

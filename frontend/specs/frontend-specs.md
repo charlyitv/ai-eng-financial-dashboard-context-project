@@ -11,6 +11,7 @@
 > | [`components.md`](./components.md) | Prompt del PM, componentes propuestos y casos límite por funcionalidad | ✅ código + estructura frontend |
 > | [`verificacion.md`](./verificacion.md) | Rastro corto: qué se verificó, con qué herramienta y en qué commit | ✅ `git log` + registros de sesión |
 > | [`api-types.ts`](./api-types.ts) | Interfaces TS de respuesta (Facets, Alerts, TopCategories) — artefacto de spec, no implementación | ✅ Pydantic + `curl` + `tsc --strict` |
+> | [`param-types.ts`](./param-types.ts) | Tipos de query params (DateRange, Alerts, TopCategories) — artefacto de spec, no implementación | ✅ firmas `Query(...)` + `curl` + `tsc --strict` |
 >
 > **Leyenda de verificación de afirmaciones de API**:
 >

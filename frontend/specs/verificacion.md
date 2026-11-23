@@ -45,6 +45,9 @@
 - ✅ `api-types.ts`: `FacetsResponse` / `AlertEntry`+`AlertResponse` /
   `CategoryEntry`+`TopCategoriesResponse` verificadas contra Pydantic +
   `curl` (2026-11-22); `npx tsc --strict --noEmit` → sin errores.
+- ✅ `param-types.ts`: `DateRangeFilter` / `AlertsParam` /
+  `TopCategoriesParams` verificados contra firmas `Query(...)` (defaults,
+  `ge`/`le`) + `curl`; `npx tsc --strict --noEmit` → sin errores.
 
 - ✅ CSV: `content-type: text/csv; charset=utf-8` (OpenAPI dice `application/json` — discrepancia documentada).
 - ✅ `period`: `YYYY-MM-DD` / `YYYY-Www` / `YYYY-MM` según `group_by` (curl).
