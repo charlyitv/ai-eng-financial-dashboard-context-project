@@ -76,6 +76,11 @@
 - ✅ Ambigüedades del brief PM cerradas en spec: spec 3 → opción (a) CSV
   completo con copy honesto (b descartada); spec 5 → `|delta_pct| > 100 %`
   se muestra tal cual; spec 2 → sin relleno de huecos (solo periodos con datos).
+- ✅ `README.md` (contrato de datos): índice de los 7 artefactos + reglas
+  fijas por verificación (copy vs contrato, header CSV real de `curl`,
+  validación cliente de rango invertido, sin implementación en rama, sin
+  dependencias nuevas) — derivado 1:1 de artefactos ya verificados; enlazado
+  desde la tabla de `frontend-specs.md` (7 filas).
 - ✅ CSV: `content-type: text/csv; charset=utf-8` (OpenAPI dice `application/json` — discrepancia documentada).
 - ✅ `period`: `YYYY-MM-DD` / `YYYY-Www` / `YYYY-MM` según `group_by` (curl).
 - ✅ Rango invertido `start > end` → `200 []` (validar orden solo en cliente).

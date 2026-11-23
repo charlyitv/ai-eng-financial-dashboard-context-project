@@ -12,6 +12,7 @@
 > | [`verificacion.md`](./verificacion.md) | Rastro corto: qué se verificó, con qué herramienta y en qué commit | ✅ `git log` + registros de sesión |
 > | [`api-types.ts`](./api-types.ts) | Interfaces TS de respuesta (Facets, Alerts, TopCategories) — artefacto de spec, no implementación | ✅ Pydantic + `curl` + `tsc --strict` |
 > | [`param-types.ts`](./param-types.ts) | Tipos de query params (DateRange, Alerts, TopCategories) — artefacto de spec, no implementación | ✅ firmas `Query(...)` + `curl` + `tsc --strict` |
+| [`README.md`](./README.md) | README del contrato de datos: índice de lectura y reglas fijas por la verificación | ✅ derivado de los artefactos verificados |
 >
 > **Leyenda de verificación de afirmaciones de API**:
 >
@@ -21,8 +22,9 @@
 > - ➕ propuesta de diseño / decisión de implementación (no es hecho de API)
 >
 > Al cierre de la verificación (2026-11-22): **0 afirmaciones ❓ sin
-> verificar** en el contrato de datos; queda **1 decisión ⚠️ de UI** abierta
-> con el PM (escala de `|delta_pct| > 100 %`, spec 5 de `components.md`).
+> verificar** y **0 decisiones ⚠️ abiertas** (CSV → opción (a),
+> `|delta_pct|` → sin tope, huecos → sin relleno; cerradas en
+> `components.md`).
 
 ## Funcionalidades (orden de implementación sugerido)
 
