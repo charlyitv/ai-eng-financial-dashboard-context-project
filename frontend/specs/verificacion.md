@@ -55,6 +55,11 @@
 - ✅ `param-types.ts`: `DateRangeFilter` / `AlertsParam` /
   `TopCategoriesParams` verificados contra firmas `Query(...)` (defaults,
   `ge`/`le`) + `curl`; `npx tsc --strict --noEmit` → sin errores.
+- ✅ JSDoc completo: **cada propiedad** de `api-types.ts` (14) y
+  `param-types.ts` (9) con significado, valores válidos (enums, defaults,
+  rangos) y formato (`YYYY-MM-DD`, `YYYY-MM`/`YYYY-Www`, 2 decimales) —
+  grep `Significado|Valores|Formato` = 14+9 campos cubiertos; `tsc --strict`
+  OK; `grep ': any\|: object'` → 0 en código.
 
 - ✅ CSV: `content-type: text/csv; charset=utf-8` (OpenAPI dice `application/json` — discrepancia documentada).
 - ✅ `period`: `YYYY-MM-DD` / `YYYY-Www` / `YYYY-MM` según `group_by` (curl).
