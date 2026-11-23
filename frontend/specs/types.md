@@ -9,6 +9,12 @@ Ubicación propuesta: `frontend/src/lib/financial-types.ts` (existentes) y
 `frontend/src/lib/api-types.ts` (nuevos, para no mezclar con los tipos ya en
 uso).
 
+> ➕ [`api-types.ts`](./api-types.ts) (artefacto en specs): interfaces de
+> respuesta ya redactadas para las funcionalidades 1, 4/7 y 6
+> (`FacetsResponse`, `AlertEntry`/`AlertResponse`, `CategoryEntry`/
+> `TopCategoriesResponse`), verificadas campo a campo contra Pydantic +
+> `curl` y con `tsc --strict` en verde (2026-11-22). No es implementación.
+
 ## Tipos existentes (ya en el repo, ✅ sin cambios)
 
 ```ts
