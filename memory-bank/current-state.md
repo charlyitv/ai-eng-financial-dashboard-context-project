@@ -9,15 +9,19 @@
 `git log --oneline -5`:
 
 ```
-49f7c3a (HEAD -> main) docs(specs): add specs index linking contract, types and components artifacts
-f330c72 docs(specs): add per-feature PM prompts, proposed components and edge cases
-234a50d docs(specs): add proposed TypeScript types verified against Pydantic models
-3d8a8b6 docs(specs): add verified data contract for frontend specs
-c1faf58 (origin/main) docs: update current-state after backend restart with --reload
+d4609a4 (HEAD -> feature/frontend-specs) docs(specs): note /docs (OpenAPI) as verification source in index
+71326dd docs(specs): add curl evidence to filter and CSV edge cases
+51ef057 docs(specs): mark summary period formats as curl-verified
+f18f377 docs(specs): verify functionalities 1-3 contract via /docs + curl
+820aa01 docs: update current-state spec paths (docs/specs -> frontend/specs)
 ```
 
-HEAD está en `49f7c3a` (rama `main`), **4 commits por delante de
-`origin/main`** (`c1faf58`). `git status --short` limpio.
+HEAD está en `d4609a4` (rama **`feature/frontend-specs`**, creada desde
+`main`), **6 commits por delante de `origin/main`** (verificado con
+`git rev-list --count origin/main..HEAD`): `4bf8bc2`/`820aa01` (mover specs
+a `frontend/specs/` + refresco de rutas) y `f18f377`/`51ef057`/`71326dd`/
+`d4609a4` (verificación funcionalidades 1–3 vía `/docs` + curl). Specs
+iniciales (`3d8a8b6`…`f3cc049`) ya están en `origin/main`.
 
 ### Commiteado y verificado (2026-11-22)
 
@@ -27,9 +31,14 @@ HEAD está en `49f7c3a` (rama `main`), **4 commits por delante de
 - ✅ Artefactos de spec en `frontend/specs/` (movidos desde `docs/specs/`
   en `4bf8bc2` — esa carpeta ya no existe; 4 ficheros: `frontend-specs.md`
   índice, `data-contract.md`, `types.md`, `components.md`); todas las
-  afirmaciones de API verificadas contra `backend/app/routes.py` + `curl` en
-  vivo; **0 ❓ pendientes**; 1 decisión ⚠️ de UI abierta con el PM
-  (`|delta_pct| > 100%`).
+  afirmaciones de API verificadas contra `backend/app/routes.py` + **`/docs`
+  (OpenAPI 3.1 en vivo)** + `curl` en vivo; **0 ❓ pendientes**; 1 decisión
+  ⚠️ de UI abierta con el PM (`|delta_pct| > 100%`).
+- ✅ Funcionalidades 1–3 (filtros, summary, CSV) re-mapeadas desde `/docs` y
+  re-verificadas con curl (2026-11-22): CSV real `text/csv; charset=utf-8`
+  (OpenAPI declara `application/json` — discrepancia documentada), formatos
+  de `period` (`YYYY-MM-DD` / `YYYY-Www` / `YYYY-MM`), y **rango de fechas
+  invertido → `200 []`** (validación del orden es solo cliente).
 - ⚠️ Restricción activa (fichero de memoria del repo): **no implementar
   componentes React ni llamadas a la API** en este proyecto; el alcance es
   specs (`frontend/specs/`) y verificación.
