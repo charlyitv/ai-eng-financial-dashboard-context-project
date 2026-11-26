@@ -12,7 +12,7 @@
   del backend (360 movimientos 2025-2026).
 - `AGENTS.md` exige `.agents/rules`, `.agents/skills` y `memory-bank/`; el
    directorio `.agents/skills/` contiene actualmente
-   `change-traceability/SKILL.md`.
+   `change-traceability/SKILL.md` y `api-contract-verification/SKILL.md`.
 
 **Rules:**
 1. No repartas `routes.py` en paquetes sin necesidad; es un archivo único a
