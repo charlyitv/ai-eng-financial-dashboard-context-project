@@ -1,7 +1,8 @@
 # Estado actual
 
-> Fecha de verificación: **2026-11-22**. Toda afirmación fue verificada con
-> `git log`, `ps`/`curl`, o ejecución de las suites de tests.
+> Fecha de última actualización: **2026-11-24**. Los datos históricos de
+> repositorio y verificación se conservan con su fecha; los resultados más
+> recientes de ejecución se registran en «Verificación vigente».
 > (Verificación previa: 2026-11-18 — ver histórico más abajo.)
 
 ## Último commit conocido
@@ -43,29 +44,52 @@ iniciales (`3d8a8b6`…`f3cc049`) ya están en `origin/main`.
   componentes React ni llamadas a la API** en este proyecto; el alcance es
   specs (`frontend/specs/`) y verificación.
 
-## Servicios en ejecución (verificados con `ps` + `curl`)
+## Verificación vigente (2026-11-24)
+
+### App en ejecución
+
+Servicios iniciados localmente sin Docker (el runbook documenta Docker como no
+disponible en esta máquina):
+
+| Servicio / URL | Resultado |
+|---|---|
+| Frontend `http://localhost:5173` | HTTP **200**; navegador muestra el dashboard, periodo `2025-2026`, cuatro KPI y dos gráficos |
+| Backend `/health/ready` | HTTP **200**, JSON |
+| Backend `/api/metrics` | HTTP **200**, JSON con **360 movimientos**, del `2025-11-01` al `2026-10-28` |
+| Backend `/docs` | HTTP **200** |
+
+### Pruebas y build
+
+- Backend — `python3 -m pytest backend/tests -q`: **19 passed**, 1
+  `StarletteDeprecationWarning` relacionada con `httpx`/`TestClient`.
+- Frontend — Node 24 (`nvm use 24`):
+  `npm --prefix frontend test`: **5 passed** (1 test file).
+- Build frontend — `npm --prefix frontend run build` (`tsc -b && vite build`):
+  **correcto**; Vite advierte que un chunk minificado supera 500 kB.
+- Nota de ejecución: `npm test` desde la raíz falla porque el script solo está
+  declarado en `frontend/package.json`; usar `npm --prefix frontend ...` o
+  ejecutar dentro de `frontend/`.
+
+## Servicios en ejecución (verificados con `curl`, 2026-11-24)
 
 | Servicio | Detalle | Verificación |
 |---|---|---|
-| Backend | `python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000` (terminal `9a0d9a6c`, PID 11720; **sin `--reload`** — lanzado solo para verificación de specs) | `curl /health/ready` → **200** (2026-11-22) |
-| Frontend | **Caído** en esta verificación | `curl http://localhost:5173` → `000` (conexión rechazada) |
-| Docker Compose | **NO en uso**: `docker compose up --build -d` falló con exit code 127 (comando no disponible) | registro de terminal de la sesión |
+| Backend | `python3 -m uvicorn app.main:app --app-dir <repo>/backend --host 0.0.0.0 --port 8000` (PID 28573; sin `--reload`) | readiness, metrics y docs → **200** |
+| Frontend | `npm --prefix frontend run dev -- --host 0.0.0.0` (Node 24) | `http://localhost:5173` → **200**; dashboard comprobado en navegador |
+| Docker Compose | **NO en uso**; runbook indica que Docker no está disponible | Se ejecutó localmente sin Docker |
 
-Nota (2026-11-22): el backend se reinició sin `--reload` para verificar el
-contrato de API con `curl`; para desarrollo conviene relanzarlo con `--reload`
-(como en el Dockerfile y como constaba en la verificación del 2026-11-18).
-El frontend no estaba levantado en el momento de la verificación.
+Ambos servidores fueron iniciados durante la verificación del 2026-11-24 y
+quedaron ejecutándose al terminarla.
 
-**Historial**: el aviso previo (uvicorn sin `--reload` sirviendo 404 en
+**Nota histórica (2026-11-18/22)**: el aviso previo (uvicorn sin `--reload` sirviendo 404 en
 `/health/ready` y solo 9 rutas en OpenAPI) se corrigió el 2026-11-18
 reiniciando con `--reload` (misma flag que usa el `Dockerfile`): `/health/ready`
 → 200, 11 rutas en OpenAPI y CSV export → 200. ⚠️ Desde entonces el proceso
-fue parado y relanzado varias veces; **en esta verificación (2026-11-22) corre
-sin `--reload`** (ver tabla de servicios). Al relanzarlo con `--reload`, el
-reloader vigila la raíz del proyecto (como en Docker), así que cambios en
-frontend también recargan el backend.
+fue parado y relanzado varias veces; **en la verificación de 2026-11-22 corría
+sin `--reload`**. Esta nota es histórica; el estado más reciente está en la
+tabla de servicios de 2026-11-24.
 
-## Estado de tests (ejecutados el 2026-11-18)
+## Línea base previa (ejecutada el 2026-11-18)
 
 ### Backend — `python3 -m pytest backend/tests -q`
 
@@ -99,10 +123,12 @@ Now using node v24.22.1 (npm v11.19.1)
    commit propio `chore: remove orphaned mock-data`; c) nunca usarlo como
    fuente de la UI. Mientras no se ejerza a) ni b) está prohibido importarlo
    desde `App.tsx`.
-2. **`.agents/skills/` inexistente**: AGENTS.md lo menciona. ✅ `memory-bank/`
-   ya existe y está commiteado (`a148485`, actualizado en `c1faf58` y en el
-   commit de este documento); `.agents/skills/` sigue sin crearse
-   (verificado 2026-11-22).
+2. **Skills y memoria del proyecto**:
+  `.agents/skills/change-traceability/SKILL.md` existe y exige enlazar los
+  cambios con una skill o workflow en el mensaje de commit o las notas del PR.
+  `AGENTS.md` también exige explicar y citar los archivos afectados y esperar
+  aprobación explícita antes de aplicar cambios. Mantener este `memory-bank`
+  actualizado cuando cambien la línea base de calidad o el flujo de trabajo.
 3. **Rollover anual de fechas en gráficos**: `_year_for_month()` en
    `backend/app/routes.py` asigna cada mes al año actual si ya pasó, si no al
    anterior — los datos se desplazan con el reloj y los gráficos del frontend

@@ -10,8 +10,9 @@
 - **`frontend/src/lib/mock-data.ts` está huérfano**: ningún archivo lo importa
   (grep verificado) — y sus datos (60 registros fijos de 2024) difieren de los
   del backend (360 movimientos 2025-2026).
-- `AGENTS.md` exige `.agents/rules`, `.agents/skills`, `memory-bank/` — las dos
-  últimas no existen en el repo.
+- `AGENTS.md` exige `.agents/rules`, `.agents/skills` y `memory-bank/`; el
+   directorio `.agents/skills/` contiene actualmente
+   `change-traceability/SKILL.md`.
 
 **Rules:**
 1. No repartas `routes.py` en paquetes sin necesidad; es un archivo único a
@@ -28,5 +29,5 @@
    estilo → `components/ui/` (convención shadcn, ver `components.json`).
 4. Antes de asumir que una convención no existe, revisa `./.agents/rules/`
    (este directorio) — `AGENTS.md` lo manda.
-5. `.agents/skills/` y `memory-bank/` no existen aún: no inventes referencias a
-   ellos en docs hasta crearlos.
+5. Mantén actualizada esta regla cuando cambie el contenido de `.agents/skills/`
+   o `memory-bank/`; no documentes skills que no existan.

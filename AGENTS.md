@@ -2,6 +2,17 @@
 
 Agents working on this project **must**:
 
+- Before making or accepting any proposed change, list every affected file
+  (with its path and relevant line numbers when available) and explain what
+  will change and why. Cite the repository files or rules that support each
+  proposed change. Wait for the user's explicit approval before applying or
+  accepting the changes; do not treat silence as approval.
+
+- For every commit or pull request, keep changes traceable to the skill or
+  workflow that guided them: cite the skill by name/path in the commit message
+  or PR notes. If no applicable skill exists, cite the relevant repository
+  rule/workflow instead. Follow `./.agents/skills/change-traceability/SKILL.md`.
+
 - Look for **work instructions and rules** in the directory:  
   `./.agents/rules`
 
